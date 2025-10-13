@@ -38,7 +38,7 @@ export default async function Image() {
     "https://github.com/mert-duzgun/claudemarketplaces.com/raw/main/public/BBH_Sans_Bartle/BBHSansBartle-Regular.ttf"
   ).then((res) => res.arrayBuffer());
 
-  const description = "Discover and share Claude Code marketplaces";
+  const description = "Discover Claude Code marketplaces and plugins";
 
   return new ImageResponse(
     (
