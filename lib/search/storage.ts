@@ -118,6 +118,7 @@ export async function mergeMarketplaces(
       existingMarketplace.description = marketplace.description;
       existingMarketplace.pluginCount = marketplace.pluginCount;
       existingMarketplace.categories = marketplace.categories;
+      existingMarketplace.pluginKeywords = marketplace.pluginKeywords;
       existingMarketplace.lastUpdated = new Date().toISOString();
       // Update stars if new data is available
       if (marketplace.stars !== undefined) {
