@@ -1,6 +1,7 @@
 import { ClaudeMarketplaceFileSchema } from "@/lib/schemas/marketplace.schema";
 import { isRepoAccessible, getRepoDescription } from "./github-search";
 import { Marketplace } from "@/lib/types";
+import { repoToSlug } from "@/lib/utils/slug";
 
 export interface ValidationResult {
   valid: boolean;
@@ -86,6 +87,7 @@ export async function validateMarketplace(
   // Step 7: Create our Marketplace object
   const marketplace: Marketplace = {
     repo,
+    slug: repoToSlug(repo),
     description,
     pluginCount: marketplaceData.plugins.length,
     categories,

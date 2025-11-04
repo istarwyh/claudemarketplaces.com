@@ -7,7 +7,7 @@ import { MarketplaceContent } from "@/components/marketplace-content";
 
 async function MarketplaceData() {
   const [marketplaces, categories] = await Promise.all([
-    getAllMarketplaces(),
+    getAllMarketplaces({ includeEmpty: false }),
     getCategories(),
   ]);
 

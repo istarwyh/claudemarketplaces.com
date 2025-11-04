@@ -1,13 +1,18 @@
 import { put, list } from "@vercel/blob";
-import { Marketplace } from "@/lib/types";
+import { Marketplace, Plugin } from "@/lib/types";
 import fs from "fs/promises";
 import path from "path";
 
 const BLOB_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 const BLOB_PATHNAME = "marketplaces.json";
+const PLUGINS_BLOB_PATHNAME = "plugins.json";
 const MARKETPLACES_FILE = path.join(
   process.cwd(),
   "lib/data/marketplaces.json"
+);
+const PLUGINS_FILE = path.join(
+  process.cwd(),
+  "lib/data/plugins.json"
 );
 
 /**
@@ -145,4 +150,71 @@ export async function mergeMarketplaces(
     removed,
     total: merged.length,
   };
+}
+
+/**
+ * Read plugins from Vercel Blob (if available) or local file
+ */
+export async function readPlugins(): Promise<Plugin[]> {
+  try {
+    // Try to read from Vercel Blob first (production)
+    if (BLOB_TOKEN) {
+      try {
+        const { blobs } = await list({
+          prefix: PLUGINS_BLOB_PATHNAME,
+          token: BLOB_TOKEN,
+          limit: 1,
+        });
+
+        if (blobs.length > 0) {
+          const blobUrl = blobs[0].url;
+          const response = await fetch(blobUrl);
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`Loaded plugins from Vercel Blob: ${blobUrl}`);
+            return data;
+          }
+        }
+
+        console.log("Plugins blob not found, falling back to local file");
+      } catch (error) {
+        console.log("Vercel Blob error, falling back to local file:", error);
+      }
+    }
+
+    // Fallback to local file
+    const fileContent = await fs.readFile(PLUGINS_FILE, "utf-8");
+    const data = JSON.parse(fileContent);
+    console.log("Loaded plugins from local file");
+    return data;
+  } catch (error) {
+    console.error("Error reading plugins:", error);
+    return [];
+  }
+}
+
+/**
+ * Write plugins to Vercel Blob and local file
+ */
+export async function writePlugins(plugins: Plugin[]): Promise<void> {
+  const jsonData = JSON.stringify(plugins, null, 2);
+
+  try {
+    if (BLOB_TOKEN) {
+      const blob = await put(PLUGINS_BLOB_PATHNAME, jsonData, {
+        access: "public",
+        token: BLOB_TOKEN,
+        contentType: "application/json",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+      });
+      console.log(`Saved plugins to Vercel Blob: ${blob.url}`);
+    } else {
+      await fs.writeFile(PLUGINS_FILE, jsonData, "utf-8");
+      console.log("Saved plugins to local file (development mode)");
+    }
+  } catch (error) {
+    console.error("Error writing plugins:", error);
+    throw error;
+  }
 }

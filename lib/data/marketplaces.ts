@@ -1,20 +1,43 @@
 import { Marketplace } from "@/lib/types";
 import { readMarketplaces } from "@/lib/search/storage";
+import { repoToSlug } from "@/lib/utils/slug";
 
 /**
- * Fetch all marketplaces
- * Server-side: reads directly from Vercel Blob or local file
- * This works during build time and runtime
+ * Fetch all marketplaces with slugs computed
+ * Optionally filter out marketplaces with 0 plugins
  */
-export async function getAllMarketplaces(): Promise<Marketplace[]> {
+export async function getAllMarketplaces(options?: {
+  includeEmpty?: boolean;
+}): Promise<Marketplace[]> {
+  const { includeEmpty = true } = options || {};
+
   try {
-    // Directly call the storage layer - works in all contexts
-    return await readMarketplaces();
+    const marketplaces = await readMarketplaces();
+
+    // Add slug to each marketplace
+    const withSlugs = marketplaces.map(m => ({
+      ...m,
+      slug: repoToSlug(m.repo),
+    }));
+
+    // Filter empty marketplaces if requested
+    if (!includeEmpty) {
+      return withSlugs.filter(m => m.pluginCount > 0);
+    }
+
+    return withSlugs;
   } catch (error) {
     console.error("Error fetching marketplaces:", error);
-    // Return empty array as fallback
     return [];
   }
+}
+
+/**
+ * Get a single marketplace by slug
+ */
+export async function getMarketplaceBySlug(slug: string): Promise<Marketplace | null> {
+  const marketplaces = await getAllMarketplaces();
+  return marketplaces.find(m => m.slug === slug) || null;
 }
 
 export async function getMarketplacesByCategory(

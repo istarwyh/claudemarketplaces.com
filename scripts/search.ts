@@ -11,8 +11,9 @@
 
 import { searchMarketplaceFiles, fetchMarketplaceFile } from "../lib/search/github-search";
 import { validateMarketplaces } from "../lib/search/validator";
-import { mergeMarketplaces } from "../lib/search/storage";
+import { mergeMarketplaces, writePlugins } from "../lib/search/storage";
 import { batchFetchStars } from "../lib/search/github-stars";
+import { extractPluginsFromMarketplaces } from "../lib/search/plugin-extractor";
 
 // CLI argument parsing
 interface CliArgs {
@@ -77,7 +78,7 @@ function log(message: string, color: string = colors.reset) {
 }
 
 function logStep(step: number, message: string) {
-  log(`\n${colors.bright}[${step}/6]${colors.reset} ${colors.cyan}${message}${colors.reset}`);
+  log(`\n${colors.bright}[${step}/7]${colors.reset} ${colors.cyan}${message}${colors.reset}`);
 }
 
 function logSuccess(message: string) {
@@ -228,23 +229,40 @@ async function runSearch() {
       logInfo(`... and ${sorted.length - 10} more`);
     }
 
-    // Step 6: Save results
+    // Step 6: Extract plugins from marketplaces
+    logStep(6, "Extracting plugins from marketplaces...");
+    const allPlugins = extractPluginsFromMarketplaces(marketplacesWithStars, validFiles);
+    logSuccess(`Extracted ${allPlugins.length} plugins from ${marketplacesWithStars.length} marketplaces`);
+
+    if (args.verbose && allPlugins.length > 0) {
+      // Show sample plugins
+      const sampleSize = Math.min(5, allPlugins.length);
+      logInfo(`Sample plugins (showing ${sampleSize} of ${allPlugins.length}):`);
+      allPlugins.slice(0, sampleSize).forEach((plugin, index) => {
+        logInfo(`  ${index + 1}. ${plugin.name} (${plugin.marketplace})`);
+      });
+    }
+
+    // Step 7: Save results
     if (args.dryRun) {
-      logStep(6, "Skipping save (dry run mode)");
+      logStep(7, "Skipping save (dry run mode)");
       logWarning("Results not saved due to --dry-run flag");
     } else {
-      logStep(6, "Saving to database...");
+      logStep(7, "Saving to database...");
 
-      // Track all discovered repos (both valid and invalid)
+      // Save marketplaces
       const allDiscoveredRepos = new Set(resultsToProcess.map((r) => r.repo));
       const mergeResult = await mergeMarketplaces(marketplacesWithStars, allDiscoveredRepos);
 
-      logSuccess(`Added: ${mergeResult.added} marketplaces`);
-      logSuccess(`Updated: ${mergeResult.updated} marketplaces`);
+      logSuccess(`Marketplaces - Added: ${mergeResult.added}, Updated: ${mergeResult.updated}`);
       if (mergeResult.removed > 0) {
-        logWarning(`Removed: ${mergeResult.removed} invalid marketplaces`);
+        logWarning(`Marketplaces - Removed: ${mergeResult.removed} invalid entries`);
       }
-      logSuccess(`Total: ${mergeResult.total} marketplaces`);
+      logSuccess(`Marketplaces - Total: ${mergeResult.total}`);
+
+      // Save plugins
+      await writePlugins(allPlugins);
+      logSuccess(`Plugins - Saved: ${allPlugins.length} plugins`);
     }
 
     // Summary
@@ -256,7 +274,8 @@ async function runSearch() {
     log(`  📊 Success Rate: ${((validMarketplaces.length / validFiles.length) * 100).toFixed(1)}%`, colors.gray);
 
     if (!args.dryRun) {
-      log(`  💾 Data saved to lib/data/marketplaces.json`, colors.green);
+      log(`  💾 Marketplaces saved to lib/data/marketplaces.json`, colors.green);
+      log(`  💾 Plugins saved to lib/data/plugins.json`, colors.green);
     }
 
     log("━".repeat(60) + "\n", colors.cyan);

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Card,
   CardHeader,
@@ -30,13 +31,14 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleExternalLink = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(repoUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
-    <a
-      href={repoUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block h-full"
-    >
+    <Link href={`/plugins/${marketplace.slug}`} className="block h-full">
       <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50 cursor-pointer">
         <CardHeader>
           <div className="flex flex-col gap-2">
@@ -44,9 +46,13 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
               <CardTitle className="text-xl font-serif line-clamp-2 flex-1 min-w-0 leading-7">
                 {marketplace.repo}
               </CardTitle>
-              <div className="flex items-center justify-center shrink-0 h-7">
+              <button
+                onClick={handleExternalLink}
+                className="flex items-center justify-center shrink-0 h-7 p-1 hover:bg-muted rounded transition-colors"
+                aria-label="View on GitHub"
+              >
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
-              </div>
+              </button>
             </div>
             <div className="flex items-center gap-3">
               {marketplace.stars !== undefined && marketplace.stars > 0 && (
@@ -104,6 +110,6 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
           </div>
         </CardContent>
       </Card>
-    </a>
+    </Link>
   );
 }
