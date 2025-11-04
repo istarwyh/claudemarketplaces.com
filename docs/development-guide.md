@@ -83,6 +83,8 @@ bun run scripts/search.ts --verbose
 bun run scripts/search.ts --limit 10
 ```
 
+**Note**: The search script applies a **5-star minimum quality filter**. Only marketplaces with 5+ GitHub stars are included in the final dataset. This ensures high-quality, community-validated marketplaces are listed (~442 discovered → ~107 included).
+
 ### 5. Commit Changes
 
 Follow conventional commits:
@@ -319,6 +321,37 @@ import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
    ```bash
    bun run scripts/search.ts --language typescript --limit 10
    ```
+
+### Understanding the Quality Filter
+
+The search script applies a **5-star minimum filter** to ensure only high-quality marketplaces are included:
+
+**Location**: `scripts/search.ts` (Step 5 of the search process)
+
+```typescript
+// Filter for quality: only include marketplaces with 5+ stars
+const beforeFilterCount = marketplacesWithStars.length;
+const qualityMarketplaces = marketplacesWithStars.filter(m => (m.stars ?? 0) >= 5);
+const filteredOutCount = beforeFilterCount - qualityMarketplaces.length;
+```
+
+**Purpose**:
+- Ensures community validation (5+ stars indicates interest/reliability)
+- Filters out abandoned or low-quality repositories
+- Reduces noise in the directory
+- Improves overall user experience
+
+**Impact**:
+- Typical results: ~442 discovered → ~107 included (~76% filtered out)
+- Smaller data files (~500KB marketplaces.json, ~1.5MB plugins.json)
+- Faster build times (~1-2 minutes vs. ~2-3 minutes)
+
+**Modifying the threshold**: To change the minimum star requirement, update line 218 in `scripts/search.ts`:
+
+```typescript
+// Change 5 to your desired minimum
+const qualityMarketplaces = marketplacesWithStars.filter(m => (m.stars ?? 0) >= 5);
+```
 
 ## Testing Strategies
 

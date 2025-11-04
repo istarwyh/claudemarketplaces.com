@@ -136,6 +136,21 @@ export default function AboutPage() {
                     </p>
                   </div>
                 </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm shrink-0">
+                    4
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-1">Quality Filter</h4>
+                    <p className="text-sm text-muted-foreground">
+                      Only marketplaces with 5 or more GitHub stars are included
+                      in our directory. This quality threshold ensures that listed
+                      marketplaces have demonstrated community interest and
+                      reliability.
+                    </p>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

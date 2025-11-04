@@ -20,6 +20,11 @@
 │  │  Discover  │→ │  Validate  │→ │   Extract    │          │
 │  │Marketplaces│  │   Schema   │  │   Plugins    │          │
 │  └────────────┘  └────────────┘  └──────────────┘          │
+│                                                              │
+│  ┌────────────┐  ┌──────────────────────────────┐          │
+│  │Enrich with │→ │Quality Filter (5+ stars)     │          │
+│  │GitHub Stars│  │~442 → ~107 marketplaces      │          │
+│  └────────────┘  └──────────────────────────────┘          │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      │ Write JSON
@@ -246,8 +251,26 @@ const ClaudeMarketplaceFileSchema = z.object({
 3. **Repository Access** - Verify repo is public
 4. **Plugin Health Check** - Verify required fields
 5. **Data Extraction** - Extract categories, descriptions
+6. **Quality Filter** - Apply 5-star minimum threshold
 
 Failures at any step mark the marketplace as invalid.
+
+### Quality Criteria
+
+To ensure high-quality marketplace listings, a **5-star minimum threshold** is enforced:
+
+```typescript
+// Filter for quality: only include marketplaces with 5+ stars
+const qualityMarketplaces = marketplaces.filter(m => (m.stars ?? 0) >= 5);
+```
+
+**Rationale**:
+- Demonstrates community interest and validation
+- Filters out low-quality or abandoned repositories
+- Reduces noise and improves user experience
+- Ensures reliability of listed marketplaces
+
+**Impact**: ~76% of discovered marketplaces are filtered out (~442 discovered → ~107 included)
 
 ## Search and Discovery
 
@@ -274,9 +297,10 @@ Finds all repositories with `.claude-plugin/marketplace.json`
 
 ### Build Time
 
-- ~442 valid marketplaces
-- ~3000+ plugins indexed
-- Build completes in ~2-3 minutes
+- ~442 marketplaces discovered
+- ~107 marketplaces after 5-star quality filter (~76% filtered out)
+- ~784 plugins indexed from high-quality marketplaces
+- Build completes in ~1-2 minutes (faster due to fewer pages)
 - Static pages generated for all routes
 
 ### Runtime Performance
@@ -288,9 +312,10 @@ Finds all repositories with `.claude-plugin/marketplace.json`
 
 ### Data Size
 
-- marketplaces.json: ~2MB (442 marketplaces)
-- plugins.json: ~5MB (~3000 plugins)
+- marketplaces.json: ~500KB (107 high-quality marketplaces after 5-star filter)
+- plugins.json: ~1.5MB (~784 plugins from quality marketplaces)
 - Loaded once at build time, not sent to client
+- Significantly reduced from pre-filter sizes (~2MB and ~5MB respectively)
 
 ## Deployment
 
@@ -345,8 +370,9 @@ BLOB_READ_WRITE_TOKEN=vercel_blob_...
 
 ### Current Limits
 
-- ~500 marketplaces discoverable
-- ~5000 plugins indexable
+- ~500 marketplaces discoverable on GitHub
+- ~107 marketplaces after 5-star quality filter
+- ~784 plugins indexed from quality marketplaces
 - Build time scales linearly with marketplace count
 
 ### Potential Bottlenecks

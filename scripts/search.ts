@@ -78,7 +78,7 @@ function log(message: string, color: string = colors.reset) {
 }
 
 function logStep(step: number, message: string) {
-  log(`\n${colors.bright}[${step}/7]${colors.reset} ${colors.cyan}${message}${colors.reset}`);
+  log(`\n${colors.bright}[${step}/8]${colors.reset} ${colors.cyan}${message}${colors.reset}`);
 }
 
 function logSuccess(message: string) {
@@ -136,10 +136,35 @@ async function runSearch() {
       logInfo(`Processing first ${resultsToProcess.length} of ${searchResults.length} results`);
     }
 
-    // Step 2: Fetch marketplace.json files
-    logStep(2, "Fetching marketplace.json files...");
+    // Step 2: Fetch GitHub stars (BEFORE fetching files to filter early)
+    logStep(2, "Fetching GitHub star counts...");
+    const allRepos = resultsToProcess.map((r) => r.repo);
+    const starMap = await batchFetchStars(allRepos, args.verbose);
+    const starsFetched = Array.from(starMap.values()).filter((s) => s !== null).length;
+    logSuccess(`Fetched stars for ${starsFetched}/${allRepos.length} repos`);
+
+    // Step 3: Apply quality filter (5+ stars) BEFORE fetching files
+    logStep(3, "Applying quality filter (5+ stars)...");
+    const qualityRepos = resultsToProcess.filter((result) => {
+      const stars = starMap.get(result.repo) ?? 0;
+      return stars >= 5;
+    });
+    const filteredOutCount = resultsToProcess.length - qualityRepos.length;
+
+    logSuccess(`Kept ${qualityRepos.length}/${resultsToProcess.length} repos (≥5 stars)`);
+    if (filteredOutCount > 0) {
+      logWarning(`Filtered out ${filteredOutCount} repos with <5 stars (saved ${filteredOutCount} API calls)`);
+    }
+
+    if (qualityRepos.length === 0) {
+      logWarning("No repos passed the quality filter. Exiting.");
+      return;
+    }
+
+    // Step 4: Fetch marketplace.json files (ONLY for quality repos)
+    logStep(4, "Fetching marketplace.json files (quality repos only)...");
     const fetchedFiles = await Promise.allSettled(
-      resultsToProcess.map(async (result) => {
+      qualityRepos.map(async (result) => {
         if (args.verbose) {
           logInfo(`Fetching ${result.repo}...`);
         }
@@ -158,13 +183,13 @@ async function runSearch() {
       .map((result) => result.value);
 
     const failedFetches = fetchedFiles.length - validFiles.length;
-    logSuccess(`Fetched ${validFiles.length}/${resultsToProcess.length} files`);
+    logSuccess(`Fetched ${validFiles.length}/${qualityRepos.length} files`);
     if (failedFetches > 0) {
       logWarning(`${failedFetches} files failed to fetch`);
     }
 
-    // Step 3: Validate marketplace files
-    logStep(3, "Validating with Zod v4 schema...");
+    // Step 5: Validate marketplace files
+    logStep(5, "Validating with Zod v4 schema...");
     const validationResults = await validateMarketplaces(validFiles, args.verbose);
 
     const validMarketplaces = validationResults
@@ -195,15 +220,7 @@ async function runSearch() {
       return;
     }
 
-    // Step 4: Fetch GitHub stars
-    logStep(4, "Fetching GitHub star counts...");
-    const repos = validMarketplaces.map((m) => m.repo);
-    const starMap = await batchFetchStars(repos, args.verbose);
-    const starsFetched = Array.from(starMap.values()).filter((s) => s !== null).length;
-
-    logSuccess(`Fetched stars for ${starsFetched}/${repos.length} repos`);
-
-    // Add stars to marketplaces
+    // Add stars to validated marketplaces
     const marketplacesWithStars = validMarketplaces.map((marketplace) => ({
       ...marketplace,
       stars: starMap.get(marketplace.repo) ?? marketplace.stars,
@@ -213,8 +230,8 @@ async function runSearch() {
           : marketplace.starsFetchedAt,
     }));
 
-    // Step 5: Preview results
-    logStep(5, "Marketplace Summary");
+    // Step 6: Preview results
+    logStep(6, "Marketplace Summary");
 
     // Show top 10 by stars
     const sorted = [...marketplacesWithStars].sort((a, b) => (b.stars || 0) - (a.stars || 0));
@@ -229,8 +246,8 @@ async function runSearch() {
       logInfo(`... and ${sorted.length - 10} more`);
     }
 
-    // Step 6: Extract plugins from marketplaces
-    logStep(6, "Extracting plugins from marketplaces...");
+    // Step 7: Extract plugins from marketplaces
+    logStep(7, "Extracting plugins from marketplaces...");
     const allPlugins = extractPluginsFromMarketplaces(marketplacesWithStars, validFiles);
     logSuccess(`Extracted ${allPlugins.length} plugins from ${marketplacesWithStars.length} marketplaces`);
 
@@ -243,12 +260,12 @@ async function runSearch() {
       });
     }
 
-    // Step 7: Save results
+    // Step 8: Save results
     if (args.dryRun) {
-      logStep(7, "Skipping save (dry run mode)");
+      logStep(8, "Skipping save (dry run mode)");
       logWarning("Results not saved due to --dry-run flag");
     } else {
-      logStep(7, "Saving to database...");
+      logStep(8, "Saving to database...");
 
       // Save marketplaces
       const allDiscoveredRepos = new Set(resultsToProcess.map((r) => r.repo));
@@ -267,11 +284,14 @@ async function runSearch() {
 
     // Summary
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+    const apiCallsSaved = filteredOutCount;
+
     log("\n" + "━".repeat(60), colors.cyan);
     log("  Search Complete!", colors.bright);
     log("━".repeat(60), colors.cyan);
     log(`  ⏱️  Duration: ${duration}s`, colors.gray);
     log(`  📊 Success Rate: ${((validMarketplaces.length / validFiles.length) * 100).toFixed(1)}%`, colors.gray);
+    log(`  🚀 API Calls Saved: ${apiCallsSaved} (quality filter before fetch)`, colors.gray);
 
     if (!args.dryRun) {
       log(`  💾 Marketplaces saved to lib/data/marketplaces.json`, colors.green);

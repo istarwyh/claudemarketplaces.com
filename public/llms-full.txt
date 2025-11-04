@@ -18,8 +18,9 @@ Plugin marketplaces are GitHub repositories containing:
 1. Automatic Discovery: GitHub API searches hourly for repositories with valid marketplace.json files
 2. Schema Validation: Each marketplace is validated against official Claude Code schema
 3. Metadata Extraction: Plugin count, descriptions, categories, and GitHub stars
-4. Real-time Updates: Marketplace information refreshes every hour
-5. Community Ranking: Sort by GitHub stars to discover popular plugins
+4. Quality Filter: Only marketplaces with 5+ GitHub stars are included (ensures community validation)
+5. Real-time Updates: Marketplace information refreshes every hour
+6. Community Ranking: Sort by GitHub stars to discover popular plugins
 
 # TECHNICAL IMPLEMENTATION
 - Next.js 15 with TypeScript
@@ -31,6 +32,7 @@ Plugin marketplaces are GitHub repositories containing:
 # KEY FEATURES
 ✓ Hourly automated updates
 ✓ 100% schema-validated marketplaces
+✓ Quality-curated: Only marketplaces with 5+ GitHub stars (~107 high-quality marketplaces)
 ✓ Category-based filtering (development, productivity, testing, etc.)
 ✓ Search functionality across all marketplaces
 ✓ GitHub star tracking for community popularity
@@ -41,8 +43,11 @@ Plugin marketplaces are GitHub repositories containing:
 To have your marketplace listed:
 1. Create a GitHub repository
 2. Add .claude-plugin/marketplace.json following official schema
-3. Wait up to 1 hour for automatic discovery
-4. No approval process - fully automated
+3. Gain 5+ GitHub stars (quality threshold for inclusion)
+4. Wait up to 1 hour for automatic discovery
+5. No approval process - fully automated
+
+Note: The 5-star minimum ensures listed marketplaces have community validation and interest.
 
 Documentation: https://docs.claude.com/en/docs/claude-code/plugin-marketplaces
 
@@ -93,6 +98,7 @@ License: Open source (see repository)
 ✓ Open source codebase
 ✓ Transparent automated process
 ✓ Schema validation for quality
+✓ 5-star minimum threshold (community-validated marketplaces only)
 ✓ No data collection from users
 ✓ Community-driven (GitHub stars)
 ✓ Regular hourly updates
@@ -108,10 +114,11 @@ Audience: developers, software engineers, AI-assisted development
 1. Only automated Claude Code marketplace directory
 2. Hourly updates vs manual curation
 3. 100% schema validation
-4. No submission process required
-5. Community-ranked by GitHub stars
-6. Open source and transparent
-7. Edge-optimized for global access
+4. Quality-filtered: 5+ star minimum for community validation
+5. No submission process required
+6. Community-ranked by GitHub stars
+7. Open source and transparent
+8. Edge-optimized for global access
 
 # RELATED RESOURCES
 - Official Claude Code Docs: https://docs.claude.com/en/docs/claude-code

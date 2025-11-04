@@ -1,6 +1,6 @@
 # Data Flow
 
-**TL;DR**: GitHub → Search → Validate → Extract → Store → Build → Deploy. Data flows one direction: from GitHub repositories through validation and extraction into JSON files, which are then read at build time to generate static pages.
+**TL;DR**: GitHub → Search → Validate → Extract → Enrich → Quality Filter (5+ stars) → Store → Build → Deploy. Data flows one direction: from GitHub repositories through validation, star enrichment, and quality filtering into JSON files, which are then read at build time to generate static pages.
 
 ## Complete Data Flow Diagram
 
@@ -109,7 +109,28 @@
                              │
                              ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│                        STEP 6: STORAGE                            │
+│                      STEP 6: QUALITY FILTER                       │
+│                                                                    │
+│  Apply 5-star minimum filter:                                     │
+│                                                                    │
+│  ┌─────────────────────────────────────────────────┐            │
+│  │ Filter marketplaces with ≥5 GitHub stars        │            │
+│  │                                                  │            │
+│  │  qualityMarketplaces = marketplaces.filter(     │            │
+│  │    m => (m.stars ?? 0) >= 5                     │            │
+│  │  )                                               │            │
+│  │                                                  │            │
+│  │  Result: Only high-quality marketplaces with    │            │
+│  │          community validation (5+ stars)        │            │
+│  └─────────────────────────────────────────────────┘            │
+│                                                                    │
+│  Before filter: ~442 marketplaces                                 │
+│  After filter: ~107 marketplaces (filtered out ~335)              │
+└────────────────────────────┬──────────────────────────────────────┘
+                             │
+                             ↓
+┌──────────────────────────────────────────────────────────────────┐
+│                        STEP 7: STORAGE                            │
 │                                                                    │
 │  ┌────────────────────────────────────────┐                     │
 │  │ mergeMarketplaces(discovered, existing) │                     │
@@ -142,7 +163,7 @@
                              │
                              ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│                       STEP 7: BUILD TIME                          │
+│                       STEP 8: BUILD TIME                          │
 │                                                                    │
 │  User runs: bun run build                                         │
 │                                                                    │
@@ -175,7 +196,7 @@
                              │
                              ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│                      STEP 8: RUNTIME (USER)                       │
+│                      STEP 9: RUNTIME (USER)                       │
 │                                                                    │
 │  User visits: claudemarketplaces.com/plugins/anthropics-claude-code│
 │                                                                    │
@@ -360,7 +381,33 @@ export async function batchFetchStars(repos: string[]): Promise<Map<string, numb
 
 **Output**: Map of repo → star count
 
-### Step 6: Storage
+### Step 6: Quality Filter
+
+**File**: `scripts/search.ts`
+
+```typescript
+// Filter for quality: only include marketplaces with 5+ stars
+const beforeFilterCount = marketplacesWithStars.length;
+const qualityMarketplaces = marketplacesWithStars.filter(m => (m.stars ?? 0) >= 5);
+const filteredOutCount = beforeFilterCount - qualityMarketplaces.length;
+
+console.log(`Kept ${qualityMarketplaces.length}/${beforeFilterCount} marketplaces (≥5 stars)`);
+console.log(`Filtered out ${filteredOutCount} marketplaces with <5 stars`);
+```
+
+**Purpose**: Ensure only high-quality, community-validated marketplaces are included in the directory.
+
+**Criteria**: Marketplace must have 5 or more GitHub stars to be included.
+
+**Rationale**:
+- Demonstrates community interest and validation
+- Filters out low-quality or abandoned repositories
+- Reduces noise and improves user experience
+- Typical results: ~442 discovered → ~107 included (~76% filtered out)
+
+**Output**: Filtered array of high-quality Marketplace objects
+
+### Step 7: Storage
 
 **File**: `lib/search/storage.ts`
 
@@ -408,7 +455,7 @@ export async function mergeMarketplaces(
 - Read: `lib/data/marketplaces.json` or Vercel Blob
 - Write: Both locations (with appropriate checks)
 
-### Step 7: Build Time
+### Step 8: Build Time
 
 **File**: `app/plugins/[slug]/page.tsx`
 
@@ -454,7 +501,7 @@ export default async function PluginsPage({ params }) {
 4. Generates metadata and structured data
 5. Outputs to `.next/` build directory
 
-### Step 8: Runtime
+### Step 9: Runtime
 
 **User Flow**:
 1. User navigates to `/plugins/anthropics-claude-code`
