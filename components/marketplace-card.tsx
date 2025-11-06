@@ -39,7 +39,7 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
 
   return (
     <Link href={`/plugins/${marketplace.slug}`} className="block h-full">
-      <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50 cursor-pointer">
+      <Card className="h-full transition-all hover:shadow-lg hover:border-primary/50 cursor-pointer overflow-auto">
         <CardHeader>
           <div className="flex flex-col gap-2">
             <div className="flex items-start justify-between gap-2">
@@ -58,13 +58,16 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
               {marketplace.stars !== undefined && marketplace.stars > 0 && (
                 <div className="flex items-center gap-1 text-muted-foreground">
                   <Star className="h-3.5 w-3.5 fill-current" />
-                  <span className="text-sm font-medium">{formatStarCount(marketplace.stars)}</span>
+                  <span className="text-sm font-medium">
+                    {formatStarCount(marketplace.stars)}
+                  </span>
                 </div>
               )}
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Package className="h-4 w-4" />
                 <span className="text-sm">
-                  {marketplace.pluginCount} {marketplace.pluginCount === 1 ? "plugin" : "plugins"}
+                  {marketplace.pluginCount}{" "}
+                  {marketplace.pluginCount === 1 ? "plugin" : "plugins"}
                 </span>
               </div>
             </div>

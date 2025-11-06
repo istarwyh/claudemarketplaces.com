@@ -86,6 +86,7 @@ export default function Home() {
         {JSON.stringify(structuredData)}
       </Script>
       <Header />
+
       <main className="flex-1">
         <Navigation />
         <Suspense
