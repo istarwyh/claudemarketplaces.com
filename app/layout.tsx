@@ -3,6 +3,7 @@ import { Crimson_Pro, Geist, Space_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import { OpenPanelComponent } from "@openpanel/nextjs";
 import "./globals.css";
+import Script from "next/script";
 
 // Crimson Pro for elegant headings
 const crimsonPro = Crimson_Pro({
@@ -118,7 +119,23 @@ export default function RootLayout({
           trackScreenViews={true}
           trackOutgoingLinks={true}
         />
-      </body>
+      
+      {/* WUUNU SNIPPET - DON'T CHANGE THIS (START) */}
+      {process.env.NODE_ENV !== "production" && (
+        <>
+          <Script id="wuunu-ws" strategy="afterInteractive">
+            { `window.__WUUNU_WS__ = "http://127.0.0.1:51414/?token=00d31b4f76e3e558f349116515e961b1f3d2e45f226b6fe0";` }
+          </Script>
+          <Script
+            id="wuunu-widget"
+            src="https://cdn.jsdelivr.net/npm/@wuunu/widget@0.1.21"
+            strategy="afterInteractive"
+            crossOrigin="anonymous"
+          />
+        </>
+      )}
+      {/* WUUNU SNIPPET - DON'T CHANGE THIS (END) */}
+</body>
     </html>
   );
 }
