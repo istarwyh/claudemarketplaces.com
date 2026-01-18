@@ -4,7 +4,7 @@ import { Marketplace } from "@/lib/types";
  * Filter preset identifiers
  * Presets are mutually exclusive with category filters
  */
-export type FilterPreset = "all" | "recently-published";
+export type FilterPreset = "all" | "common";
 
 /**
  * Configuration for a filter preset
@@ -17,19 +17,18 @@ export interface FilterPresetConfig {
 }
 
 /**
- * Check if a marketplace was recently published
- * A marketplace is recently published when it was discovered within the last 24 hours
+ * Check if a marketplace is in the common list
+ * Common marketplaces are curated for frequent use
  */
-export function isRecentlyPublished(marketplace: Marketplace): boolean {
-  if (!marketplace.discoveredAt) {
-    return false;
-  }
-
-  const discoveredDate = new Date(marketplace.discoveredAt);
-  const now = new Date();
-  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-  return discoveredDate >= twentyFourHoursAgo;
+export function isCommonMarketplace(marketplace: Marketplace): boolean {
+  const commonMarketplaces = [
+    "anthropics/claude-code",
+    "upstash/context7", 
+    "ChromeDevTools/chrome-devtools-mcp",
+    "ccplugins/awesome-claude-code-plugins"
+  ];
+  
+  return commonMarketplaces.includes(marketplace.repo);
 }
 
 /**
@@ -39,15 +38,15 @@ export function isRecentlyPublished(marketplace: Marketplace): boolean {
 export const FILTER_PRESETS: FilterPresetConfig[] = [
   {
     id: "all",
-    label: "All",
-    description: "Show all marketplaces",
+    label: "全部",
+    description: "显示全部市场",
     predicate: () => true,
   },
   {
-    id: "recently-published",
-    label: "Recently published",
-    description: "Show marketplaces discovered in the last 24 hours",
-    predicate: isRecentlyPublished,
+    id: "common",
+    label: "常用",
+    description: "显示常用的精选市场",
+    predicate: isCommonMarketplace,
   },
 ];
 

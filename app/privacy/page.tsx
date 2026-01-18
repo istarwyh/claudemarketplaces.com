@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export const metadata: Metadata = {
@@ -241,8 +240,6 @@ export default function PrivacyPage() {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

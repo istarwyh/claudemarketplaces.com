@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Navigation } from "@/components/navigation";
 import { VideoCard } from "@/components/video-card";
 import { videos } from "@/lib/data/learn-content";
@@ -23,7 +22,7 @@ export default function LearnPage() {
     <div className="min-h-screen flex flex-col">
       <Header
         subtitle="Learn about Claude Code through video tutorials"
-        showAboutLink={true}
+        showDocsLink={true}
       />
 
       <main className="flex-1">
@@ -36,8 +35,6 @@ export default function LearnPage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

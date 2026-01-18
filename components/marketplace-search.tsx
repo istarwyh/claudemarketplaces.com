@@ -16,7 +16,7 @@ export function MarketplaceSearch({
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       <input
         type="text"
-        placeholder="Search by name, description, or category..."
+        placeholder="按名称、描述或分类搜索…"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 pl-9 pr-9 text-base shadow-xs transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
@@ -25,7 +25,7 @@ export function MarketplaceSearch({
         <button
           onClick={() => onChange("")}
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="Clear search"
+          aria-label="清空搜索"
         >
           <X className="h-4 w-4" />
         </button>

@@ -5,6 +5,7 @@ import { useMemo, useCallback } from "react";
 import { Marketplace } from "@/lib/types";
 import { FilterPreset, getFilterPreset } from "@/lib/config/filter-presets";
 import { useDebounce } from "@/lib/hooks/use-debounce";
+import { TaxonomyCategory, getRawCategoriesByTaxonomy } from "@/lib/config/taxonomy";
 
 export function useMarketplaceFilters(
   marketplaces: Marketplace[],
@@ -19,9 +20,16 @@ export function useMarketplaceFilters(
   // Validate filter preset from URL params
   const filterParam = searchParams.get("filter");
   const filterPreset: FilterPreset =
-    filterParam === "recently-published" ? filterParam : "all";
+    filterParam === "common" ? filterParam : "all";
+  
+  // Support both raw categories and taxonomy categories in URL
   const selectedCategories = useMemo(
     () => searchParams.get("categories")?.split(",").filter(Boolean) || [],
+    [searchParams]
+  );
+  
+  const selectedTaxonomy = useMemo(
+    () => searchParams.get("taxonomy") as TaxonomyCategory | null,
     [searchParams]
   );
 
@@ -66,29 +74,46 @@ export function useMarketplaceFilters(
       }
     }
     // Category filter (only if no preset filter is active)
-    else if (selectedCategories.length > 0) {
-      filtered = filtered.filter((m) =>
-        selectedCategories.some((cat) => m.categories.includes(cat))
-      );
+    else if (selectedTaxonomy || selectedCategories.length > 0) {
+      if (selectedTaxonomy) {
+        // Filter by taxonomy: get all raw categories that map to this taxonomy
+        const rawCategoriesForTaxonomy = getRawCategoriesByTaxonomy(selectedTaxonomy);
+        filtered = filtered.filter((m) =>
+          rawCategoriesForTaxonomy.some((cat) => m.categories.includes(cat))
+        );
+      } else {
+        // Legacy: filter by raw categories
+        filtered = filtered.filter((m) =>
+          selectedCategories.some((cat) => m.categories.includes(cat))
+        );
+      }
     }
 
     // Sort by stars (highest first)
     return filtered.sort((a, b) => {
+      const aOriginRank = a.origin === "internal" ? 0 : 1;
+      const bOriginRank = b.origin === "internal" ? 0 : 1;
+      if (aOriginRank !== bOriginRank) {
+        return aOriginRank - bOriginRank;
+      }
+
       const starsA = a.stars ?? 0;
       const starsB = b.stars ?? 0;
       return starsB - starsA;
     });
-  }, [marketplaces, debouncedSearchQuery, filterPreset, selectedCategories]);
+  }, [marketplaces, debouncedSearchQuery, filterPreset, selectedCategories, selectedTaxonomy]);
 
   return {
     filterPreset,
     selectedCategories,
+    selectedTaxonomy,
     filteredMarketplaces,
     filteredCount: filteredMarketplaces.length,
     setFilterPreset: (preset: FilterPreset) => {
       updateURL({
         filter: preset === "all" ? null : preset,
         categories: null, // Clear categories when setting a preset
+        taxonomy: null, // Clear taxonomy when setting a preset
       });
     },
     toggleCategory: (cat: string) => {
@@ -98,8 +123,16 @@ export function useMarketplaceFilters(
       updateURL({
         categories: newCats.length ? newCats.join(",") : null,
         filter: null, // Clear preset when selecting a category
+        taxonomy: null, // Clear taxonomy when selecting raw category
       });
     },
-    clearFilters: () => updateURL({ categories: null, filter: null }),
+    toggleTaxonomy: (taxonomy: TaxonomyCategory) => {
+      updateURL({
+        taxonomy: selectedTaxonomy === taxonomy ? null : taxonomy,
+        categories: null, // Clear raw categories when selecting taxonomy
+        filter: null, // Clear preset when selecting taxonomy
+      });
+    },
+    clearFilters: () => updateURL({ categories: null, filter: null, taxonomy: null }),
   };
 }

@@ -11,7 +11,6 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { PluginContent } from "@/components/plugin-content";
 import {
   getMarketplaceBySlug,
@@ -213,7 +212,6 @@ export default async function PluginsPage({ params }: PageProps) {
           <PluginData slug={slug} />
         </Suspense>
       </main>
-      <Footer />
     </div>
   );
 }

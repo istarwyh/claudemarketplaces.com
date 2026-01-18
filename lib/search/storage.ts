@@ -10,6 +10,10 @@ const MARKETPLACES_FILE = path.join(
   process.cwd(),
   "lib/data/marketplaces.json"
 );
+const INTERNAL_MARKETPLACES_FILE = path.join(
+  process.cwd(),
+  "lib/data/marketplaces-internal.json"
+);
 const PLUGINS_FILE = path.join(
   process.cwd(),
   "lib/data/plugins.json"
@@ -53,6 +57,16 @@ export async function readMarketplaces(): Promise<Marketplace[]> {
     return data;
   } catch (error) {
     console.error("Error reading marketplaces:", error);
+    return [];
+  }
+}
+
+export async function readInternalMarketplaces(): Promise<Marketplace[]> {
+  try {
+    const fileContent = await fs.readFile(INTERNAL_MARKETPLACES_FILE, "utf-8");
+    const data = JSON.parse(fileContent);
+    return data;
+  } catch {
     return [];
   }
 }

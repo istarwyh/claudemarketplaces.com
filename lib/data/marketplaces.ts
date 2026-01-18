@@ -1,6 +1,7 @@
 import { Marketplace } from "@/lib/types";
-import { readMarketplaces } from "@/lib/search/storage";
+import { readInternalMarketplaces, readMarketplaces } from "@/lib/search/storage";
 import { repoToSlug } from "@/lib/utils/slug";
+import { TaxonomyCategory, getTaxonomyCategory } from "@/lib/config/taxonomy";
 
 /**
  * Fetch all marketplaces with slugs computed
@@ -12,20 +13,38 @@ export async function getAllMarketplaces(options?: {
   const { includeEmpty = true } = options || {};
 
   try {
-    const marketplaces = await readMarketplaces();
+    const [publicMarketplaces, internalMarketplaces] = await Promise.all([
+      readMarketplaces(),
+      readInternalMarketplaces(),
+    ]);
+
+    const internal = internalMarketplaces.map((m) => ({
+      ...m,
+      origin: "internal" as const,
+    }));
+    const publicOnes = publicMarketplaces.map((m) => ({
+      ...m,
+      origin: "public" as const,
+    }));
+
+    const marketplaces = [...internal, ...publicOnes];
 
     // Add slug to each marketplace
-    const withSlugs = marketplaces.map(m => ({
+    const withSlugs = marketplaces.map((m) => ({
       ...m,
       slug: repoToSlug(m.repo),
     }));
 
     // Filter empty marketplaces if requested
-    if (!includeEmpty) {
-      return withSlugs.filter(m => m.pluginCount > 0);
-    }
+    const nonEmpty = includeEmpty
+      ? withSlugs
+      : withSlugs.filter((m) => m.pluginCount > 0);
 
-    return withSlugs;
+    return nonEmpty.sort((a, b) => {
+      const aRank = a.origin === "internal" ? 0 : 1;
+      const bRank = b.origin === "internal" ? 0 : 1;
+      return aRank - bRank;
+    });
   } catch (error) {
     console.error("Error fetching marketplaces:", error);
     return [];
@@ -51,4 +70,16 @@ export async function getCategories(): Promise<string[]> {
   const marketplaces = await getAllMarketplaces();
   const categories = new Set(marketplaces.flatMap((m) => m.categories));
   return Array.from(categories).sort();
+}
+
+export async function getTaxonomyCategories(): Promise<TaxonomyCategory[]> {
+  const marketplaces = await getAllMarketplaces();
+  const taxonomySet = new Set<TaxonomyCategory>();
+
+  for (const marketplace of marketplaces) {
+    const taxonomy = getTaxonomyCategory(marketplace.categories);
+    taxonomySet.add(taxonomy);
+  }
+
+  return Array.from(taxonomySet);
 }

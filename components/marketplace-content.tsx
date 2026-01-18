@@ -7,15 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { useMarketplaceFilters } from "@/lib/hooks/use-marketplace-filters";
 import { Marketplace } from "@/lib/types";
 import { FILTER_PRESETS } from "@/lib/config/filter-presets";
+import { getCategoryLabel } from "@/lib/config/category-labels";
+import { TAXONOMY_CATEGORIES, getTaxonomyConfig } from "@/lib/config/taxonomy";
 
 interface MarketplaceContentProps {
   marketplaces: Marketplace[];
-  categories: string[];
+  taxonomyCategories: string[];
 }
 
 export function MarketplaceContent({
   marketplaces,
-  categories,
+  taxonomyCategories,
 }: MarketplaceContentProps) {
   // Local state for search query (not in URL)
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,16 +25,19 @@ export function MarketplaceContent({
   const {
     filterPreset,
     selectedCategories,
+    selectedTaxonomy,
     filteredMarketplaces,
     filteredCount,
     setFilterPreset,
     toggleCategory,
+    toggleTaxonomy,
     clearFilters: clearUrlFilters,
   } = useMarketplaceFilters(marketplaces, searchQuery);
 
   const hasActiveFilters =
     searchQuery ||
     selectedCategories.length > 0 ||
+    selectedTaxonomy !== null ||
     (filterPreset && filterPreset !== "all");
 
   // Clear both local search and URL filters
@@ -42,7 +47,7 @@ export function MarketplaceContent({
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 pt-8">
       {/* Search Bar */}
       <div className="mb-6">
         <MarketplaceSearch value={searchQuery} onChange={setSearchQuery} />
@@ -62,17 +67,17 @@ export function MarketplaceContent({
               {preset.label}
             </Badge>
           ))}
-          {/* Category Filters */}
-          {categories.map((category) => {
-            const isSelected = selectedCategories.includes(category);
+          {/* Taxonomy Category Filters */}
+          {TAXONOMY_CATEGORIES.filter(cat => taxonomyCategories.includes(cat.id)).map((taxonomy) => {
+            const isSelected = selectedTaxonomy === taxonomy.id;
             return (
               <Badge
-                key={category}
+                key={taxonomy.id}
                 variant={isSelected ? "default" : "outline"}
-                className="cursor-pointer capitalize shrink-0"
-                onClick={() => toggleCategory(category)}
+                className="cursor-pointer shrink-0"
+                onClick={() => toggleTaxonomy(taxonomy.id)}
               >
-                {category}
+                {taxonomy.label}
               </Badge>
             );
           })}
@@ -82,14 +87,14 @@ export function MarketplaceContent({
       {/* Results info */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-muted-foreground">
-          {filteredCount} {filteredCount === 1 ? "marketplace" : "marketplaces"}
+          共 {filteredCount} 个市场
         </p>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
             className="text-sm text-primary hover:underline"
           >
-            Clear filters
+            清除筛选
           </button>
         )}
       </div>
@@ -100,14 +105,14 @@ export function MarketplaceContent({
       ) : (
         <div className="text-center py-12">
           <p className="text-muted-foreground mb-4">
-            No marketplaces found matching your criteria.
+            未找到符合当前条件的市场。
           </p>
           {hasActiveFilters && (
             <button
               onClick={clearFilters}
               className="text-primary hover:underline"
             >
-              Clear all filters
+              清除全部筛选
             </button>
           )}
         </div>

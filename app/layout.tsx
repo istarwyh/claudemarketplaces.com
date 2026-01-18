@@ -33,9 +33,9 @@ const bbhSans = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Claude Code Plugin Marketplace | AI Tools & Extensions",
+  title: "Claude Code 插件市场 | AI 工具与扩展",
   description:
-    "Explore the ultimate Claude Code plugin marketplace. Discover powerful AI development tools, productivity extensions, and innovative integrations from top developers. Find the perfect plugins for your workflow.",
+    "探索 Claude Code 插件市场，发现高质量的 AI 开发工具、效率扩展与集成方案，快速找到适合你的插件与工作流。",
   keywords: [
     "Claude Code marketplace",
     "Claude plugin marketplace",
@@ -46,6 +46,10 @@ export const metadata: Metadata = {
     "Claude development tools",
     "Claude Code extensions",
     "plugin marketplaces for claude code",
+    "Claude Code 插件市场",
+    "Claude Code 插件",
+    "AI 开发工具",
+    "Agent 工具",
   ],
   icons: {
     icon: [
@@ -67,12 +71,12 @@ export const metadata: Metadata = {
     "llms-full-txt": "/llms-full.txt",
   },
   openGraph: {
-    title: "Claude Code Plugin Marketplace | AI Tools & Extensions",
+    title: "Claude Code 插件市场 | AI 工具与扩展",
     description:
-      "Explore the ultimate Claude Code plugin marketplace. Discover powerful AI development tools, productivity extensions, and innovative integrations from top developers.",
+      "探索 Claude Code 插件市场，发现高质量的 AI 开发工具、效率扩展与集成方案。",
     url: "https://claudemarketplaces.com",
     siteName: "Claude Code Plugin Marketplace",
-    locale: "en_US",
+    locale: "zh_CN",
     type: "website",
     images: [
       {
@@ -85,9 +89,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Claude Code Plugin Marketplace | AI Tools",
+    title: "Claude Code 插件市场 | AI 工具",
     description:
-      "Discover powerful plugins, extensions, and tools for Claude AI. Browse curated marketplaces and boost your development workflow.",
+      "发现 Claude AI 的插件、扩展与开发工具，快速浏览与筛选，提升你的开发效率。",
     images: ["https://claudemarketplaces.com/og-image.png"],
   },
   robots: {
@@ -109,7 +113,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="zh-CN">
       <body
         className={`${crimsonPro.variable} ${geist.variable} ${spaceMono.variable} ${bbhSans.variable} antialiased`}
       >

@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Navigation } from "@/components/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FeedbackForm } from "@/components/feedback-form";
@@ -23,7 +22,7 @@ export default function FeedbackPage() {
     <div className="min-h-screen flex flex-col">
       <Header
         subtitle="Share your thoughts and help us improve the directory"
-        showAboutLink={true}
+        showDocsLink={true}
       />
 
       <main className="flex-1">
@@ -53,8 +52,6 @@ export default function FeedbackPage() {
           </Card>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

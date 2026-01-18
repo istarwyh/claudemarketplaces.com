@@ -12,7 +12,6 @@ Claude Code Marketplaces is an automated directory that discovers and catalogs C
 
 ## Key URLs
 - Homepage: https://claudemarketplaces.com
-- About: https://claudemarketplaces.com/about
 - Privacy: https://claudemarketplaces.com/privacy
 - API: https://claudemarketplaces.com/api/marketplaces
 

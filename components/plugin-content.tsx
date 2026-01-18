@@ -6,6 +6,7 @@ import { MarketplaceSearch } from "@/components/marketplace-search";
 import { Badge } from "@/components/ui/badge";
 import { usePluginFilters } from "@/lib/hooks/use-plugin-filters";
 import { Plugin } from "@/lib/types";
+import { getCategoryLabel } from "@/lib/config/category-labels";
 
 interface PluginContentProps {
   plugins: Plugin[];
@@ -64,7 +65,7 @@ export function PluginContent({ plugins, categories, expectedPluginCount }: Plug
                   className="cursor-pointer capitalize shrink-0"
                   onClick={() => toggleCategory(category)}
                 >
-                  {category}
+                  {getCategoryLabel(category)}
                 </Badge>
               );
             })}
@@ -75,14 +76,14 @@ export function PluginContent({ plugins, categories, expectedPluginCount }: Plug
       {/* Results info */}
       <div className="flex items-center justify-between mb-6">
         <p className="text-sm text-muted-foreground">
-          {filteredCount} {filteredCount === 1 ? "plugin" : "plugins"}
+          共 {filteredCount} 个插件
         </p>
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
             className="text-sm text-primary hover:underline"
           >
-            Clear filters
+            清除筛选
           </button>
         )}
       </div>
@@ -99,23 +100,23 @@ export function PluginContent({ plugins, categories, expectedPluginCount }: Plug
           {hasDataSyncIssue ? (
             <>
               <p className="text-muted-foreground mb-2">
-                Plugins are currently being indexed.
+                插件正在同步中。
               </p>
               <p className="text-sm text-muted-foreground">
-                This marketplace has {expectedPluginCount} {expectedPluginCount === 1 ? 'plugin' : 'plugins'} that will appear shortly. Please check back soon or refresh the page.
+                该市场共有 {expectedPluginCount} 个插件，稍后将显示。你可以稍后再来或刷新页面。
               </p>
             </>
           ) : (
             <>
               <p className="text-muted-foreground mb-4">
-                No plugins found matching your criteria.
+                未找到符合当前条件的插件。
               </p>
               {hasActiveFilters && (
                 <button
                   onClick={clearFilters}
                   className="text-primary hover:underline"
                 >
-                  Clear all filters
+                  清除全部筛选
                 </button>
               )}
             </>

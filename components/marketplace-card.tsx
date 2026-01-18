@@ -13,6 +13,7 @@ import { Marketplace } from "@/lib/types";
 import { Package, ExternalLink, Copy, Check, Star } from "lucide-react";
 import { useState } from "react";
 import { formatStarCount } from "@/lib/utils/format";
+import { getCategoryLabel } from "@/lib/config/category-labels";
 
 interface MarketplaceCardProps {
   marketplace: Marketplace;
@@ -45,12 +46,20 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
                   {marketplace.repo}
                 </Link>
               </CardTitle>
+              {marketplace.origin && (
+                <Badge
+                  variant={marketplace.origin === "internal" ? "default" : "outline"}
+                  className="relative z-10 shrink-0 text-xs"
+                >
+                  {marketplace.origin === "internal" ? "内部" : "公网"}
+                </Badge>
+              )}
               <a
                 href={repoUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="relative z-10 flex items-center justify-center shrink-0 h-7 p-1 hover:bg-muted rounded transition-colors"
-                aria-label="View on GitHub"
+                aria-label="在 GitHub 查看"
               >
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </a>
@@ -67,8 +76,7 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Package className="h-4 w-4" />
                 <span className="text-sm">
-                  {marketplace.pluginCount}{" "}
-                  {marketplace.pluginCount === 1 ? "plugin" : "plugins"}
+                  {marketplace.pluginCount} 个插件
                 </span>
               </div>
             </div>
@@ -87,7 +95,7 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
                     variant="secondary"
                     className="text-xs capitalize"
                   >
-                    {category}
+                    {getCategoryLabel(category)}
                   </Badge>
                 ))}
               </div>
@@ -101,7 +109,7 @@ export function MarketplaceCard({ marketplace }: MarketplaceCardProps) {
                 <button
                   onClick={handleCopy}
                   className="relative z-10 shrink-0 p-1.5 hover:bg-muted rounded transition-colors cursor-pointer"
-                  title="Copy to clipboard"
+                  title="复制命令"
                 >
                   {copied ? (
                     <Check className="h-3.5 w-3.5 text-green-500" />

@@ -33,6 +33,7 @@ export interface Marketplace {
   discoveredAt?: string;
   lastUpdated?: string;
   source?: 'manual' | 'auto';
+  origin?: "public" | "internal";
   stars?: number;
   starsFetchedAt?: string;
 }

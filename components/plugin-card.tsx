@@ -52,7 +52,7 @@ export function PluginCard({ plugin }: PluginCardProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center h-7 p-1 hover:bg-muted rounded transition-colors"
-                aria-label="View source on GitHub"
+                aria-label="在 GitHub 查看源码"
               >
                 <ExternalLink className="h-4 w-4 text-muted-foreground" />
               </a>
@@ -96,7 +96,7 @@ export function PluginCard({ plugin }: PluginCardProps) {
           {/* Author */}
           {plugin.author?.name && (
             <p className="text-xs text-muted-foreground">
-              by {plugin.author.name}
+              作者：{plugin.author.name}
             </p>
           )}
 
@@ -109,7 +109,7 @@ export function PluginCard({ plugin }: PluginCardProps) {
               <button
                 onClick={handleCopy}
                 className="shrink-0 p-1.5 hover:bg-muted rounded transition-colors cursor-pointer"
-                title="Copy to clipboard"
+                title="复制命令"
               >
                 {copied ? (
                   <Check className="h-3.5 w-3.5 text-green-500" />
